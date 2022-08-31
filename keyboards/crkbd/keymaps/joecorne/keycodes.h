@@ -25,3 +25,5 @@ enum custom_keycodes {
 #define CTL_J CTL_T(KC_J)
 #define SFT_K SFT_T(KC_K)
 #define ALT_L ALT_T(KC_L)
+
+#define ALT_INS RALT(KC_INS)
