@@ -77,7 +77,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_ADJUST] = LAYOUT_split_3x6_3( \
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-      XXXXXXX,  RGBRST, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,\
+       BL_OFF,  RGBRST, XXXXXXX, XXXXXXX, XXXXXXX, BL_BRTG,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,\
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       RGB_TOG, RGB_HUI, RGB_SAI, RGB_VAI, RGB_M_R, RGB_M_K,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,\
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -166,21 +166,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           layer_off(_MOVES);
         }
         return false;
-    case RGBRST:
-            if (record->event.pressed) {
-#    ifdef RGBLIGHT_ENABLE
-                eeconfig_update_rgblight_default();
-                rgblight_enable();
-#    elif RGB_MATRIX_ENABLE
-                eeconfig_update_rgb_matrix_default();
-                rgb_matrix_enable();
-#    endif
-
-#if defined(RGBLIGHT_ENABLE) || defined(RGB_MATRIX_ENABLE)
-                save_rgb_config();
-#endif
-            }
-            return false;
   }
   return true;
 }

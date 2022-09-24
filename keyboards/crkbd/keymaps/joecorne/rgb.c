@@ -57,15 +57,9 @@ void restore_rgb_config(void) {
 }
 
 void rgb_by_layer(int layer) {
-#ifdef RGBLIGHT_ENABLE
-    rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
-#elif RGB_MATRIX_ENABLE
-    rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
-#endif
-
     switch (layer) {
         case _ADJUST:
-            rgblight_sethsv_noeeprom(9, 255, 255);
+            rgblight_sethsv_noeeprom(HSV_YELLOW);
             break;
         case _RAISE:
             rgblight_sethsv_noeeprom(HSV_CYAN);
@@ -74,12 +68,12 @@ void rgb_by_layer(int layer) {
             rgblight_sethsv_noeeprom(HSV_MAGENTA);
             break;
         case _FUNC:
-            rgblight_sethsv_noeeprom(HSV_SPRINGGREEN);
+            rgblight_sethsv_noeeprom(HSV_GREEN);
             break;
         case _MOVES:
             rgblight_sethsv_noeeprom(HSV_WHITE);
             break;
         default:
-            rgblight_sethsv_noeeprom(HSV_RED);
+            rgblight_sethsv_noeeprom(HSV_BLUE);
     }
 }

@@ -4,9 +4,6 @@
 
 extern uint8_t is_master;
 
-#if defined(RGBLIGHT_ENABLE) || defined(RGB_MATRIX_ENABLE)
-#    include "rgb.c"
-#endif
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     if (!is_keyboard_master()) {
