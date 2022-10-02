@@ -39,11 +39,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_RAISE] = LAYOUT_split_3x6_3( \
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-       KC_GRV, KC_EXLM,   KC_AT, KC_LBRC, KC_RBRC,  KC_DLR,                      KC_CIRC, _______, _______, _______, _______, _______,\
+       KC_GRV,   KC_AT, KC_EXLM, KC_LBRC, KC_RBRC,  KC_DLR,                      KC_CIRC,  KC_EQL, _______, _______, _______, _______,\
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_ASTR, KC_AMPR, KC_HASH, KC_LPRN, KC_RPRN, KC_MINS,                      _______, _______, _______, _______, _______, _______,\
+      KC_ASTR, KC_AMPR, KC_HASH, KC_LPRN, KC_RPRN, KC_MINS,                      KC_LABK, KC_RABK, _______, _______, _______, _______,\
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_PIPE, KC_TILD, KC_PERC, KC_LABK, KC_RABK,  KC_EQL,                      _______, _______, _______, _______, _______, _______,\
+      KC_PIPE, KC_TILD, KC_PERC, KC_LCBR, KC_RCBR,  KC_EQL,                      _______, _______, _______, _______, _______, _______,\
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           _______, _______, _______,    _______, _______, _______ \
                                       //`--------------------------'  `--------------------------'
@@ -88,36 +88,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 
-#if defined(RGBLIGHT_ENABLE) || defined(RGB_MATRIX_ENABLE)
-layer_state_t layer_state_set_user(layer_state_t state) {
-    /* For any layer other than default, save current RGB state and switch to layer-based RGB */
-    if (layer_state_cmp(state, 0)) {
-        restore_rgb_config();
-    } else {
-        uint8_t layer = get_highest_layer(state);
-        if (layer_state_cmp(layer_state, 0)) save_rgb_config();
-        rgb_by_layer(layer);
-    }
-    return state;
-}
-#endif
 
-// Setting ADJUST layer RGB back to default
-void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
-  if (IS_LAYER_ON(layer1) && IS_LAYER_ON(layer2)) {
-    layer_on(layer3);
-  }
-  if(IS_LAYER_OFF(layer1) && IS_LAYER_OFF(layer2)) {
-    layer_off(layer3);
-  }
-}
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef OLED_ENABLE
-    if (record->event.pressed) {
-        set_keylog(keycode, record);
-    }
+if (record->event.pressed) {
+    set_keylog(keycode, record);
+  }
 #endif
   switch (keycode) {
     case QWERTY:

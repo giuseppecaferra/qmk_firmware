@@ -77,3 +77,25 @@ void rgb_by_layer(int layer) {
             rgblight_sethsv_noeeprom(HSV_BLUE);
     }
 }
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+    /* For any layer other than default, save current RGB state and switch to layer-based RGB */
+    if (layer_state_cmp(state, 0)) {
+        restore_rgb_config();
+    } else {
+        uint8_t layer = get_highest_layer(state);
+        if (layer_state_cmp(layer_state, 0)) save_rgb_config();
+        rgb_by_layer(layer);
+    }
+    return state;
+}
+
+// Setting ADJUST layer RGB back to default
+void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
+  if (IS_LAYER_ON(layer1) && IS_LAYER_ON(layer2)) {
+    layer_on(layer3);
+  }
+  if(IS_LAYER_OFF(layer1) && IS_LAYER_OFF(layer2)) {
+    layer_off(layer3);
+  }
+}
