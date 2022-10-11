@@ -35,8 +35,8 @@ void oled_render_layer_state(void) {
             break;
     }
 }
-void oled_render_wpm(void){
-    oled_set_cursor(0,5);
+void oled_render_wpm(void) {
+    oled_set_cursor(0, 5);
     // This way it's more size efficient than calling sprintf
     oled_write_P(PSTR("WPM: "), false);
     oled_write(get_u8_str(get_current_wpm(), ' '), false);
@@ -44,40 +44,163 @@ void oled_render_wpm(void){
 }
 
 void oled_render_logo(void) {
-    static const char PROGMEM crkbd_logo[] = {
-        0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f, 0x90, 0x91, 0x92, 0x93, 0x94,
-        0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4,
-        0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf, 0xd0, 0xd1, 0xd2, 0xd3, 0xd4,
-        0};
+    static const char PROGMEM crkbd_logo[] = {0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f, 0x90, 0x91, 0x92, 0x93, 0x94, 0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf, 0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0};
     oled_write_P(crkbd_logo, false);
 }
 
-char keylog_str[24] = {};
-
-const char code_to_name[60] = {
-    ' ', ' ', ' ', ' ', 'a', 'b', 'c', 'd', 'e', 'f',
-    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-    'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-    'R', 'E', 'B', 'T', '_', '-', '=', '[', ']', '\\',
-    '#', ';', '\'', '`', ',', '.', '/', ' ', ' ', ' '};
-
-void set_keylog(uint16_t keycode, keyrecord_t *record) {
-  char name = ' ';
-    if ((keycode >= QK_MOD_TAP && keycode <= QK_MOD_TAP_MAX) ||
-        (keycode >= QK_LAYER_TAP && keycode <= QK_LAYER_TAP_MAX)) { keycode = keycode & 0xFF; }
-  if (keycode < 60) {
-    name = code_to_name[keycode];
-  }
-
-  // update keylog
-  snprintf(keylog_str, sizeof(keylog_str), "%dx%d, k%2d : %c",
-           record->event.key.row, record->event.key.col,
-           keycode, name);
+// Keylock State
+void render_keylock_status(uint8_t led_usb_state) {
+    oled_write_P(PSTR(" "), false);
+    oled_write_P(led_usb_state & (1 << USB_LED_NUM_LOCK) ? PSTR("-NUML") : PSTR("-----"), false);
+    oled_write_P(PSTR(" "), false);
+    oled_write_P(led_usb_state & (1 << USB_LED_CAPS_LOCK) ? PSTR("-CAPS") : PSTR("-----"), false);
+    oled_write_P(PSTR(" "), false);
+    oled_write_P(led_usb_state & (1 << USB_LED_SCROLL_LOCK) ? PSTR("-SCRL") : PSTR("-----"), false);
+    oled_write_P(PSTR(" "), false);
 }
 
-void oled_render_keylog(void) {
+// Keylogger
+#define KEYLOGGER_LENGTH 8
+static uint32_t oled_timer                       = 0;
+static char     keylog_str[KEYLOGGER_LENGTH + 1] = {0};
+
+static const char PROGMEM code_to_name[0xFF] = {
+    //   0    1    2    3    4    5    6    7    8    9    A    B    c    D    E    F
+    182, ' ',  ' ', ' ', 'a',  'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', // 0x
+    'm', 'n',  'o', 'p', 'q',  'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '1', '2', // 1x
+    '3', '4',  '5', '6', '7',  '8', '9', '0', 20,  19,  17,  29,  22,  '-', '=', '[', // 2x
+    ']', '\\', '#', ';', '\'', '`', ',', '.', '/', 188, 149, 150, 151, 152, 153, 154, // 3x
+    155, 156,  157, 158, 159,  181, 191, 190, ' ', ' ', 185, 183, 16,  186, 184, 26,  // 4x
+    27,  25,   24,  189, '/',  '*', '-', '+', ' ', '1', '2', '3', '4', '5', '6', '7', // 5x
+    '8', '9',  '0', '.', ' ',  187, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', // 6x
+    ' ', ' ',  ' ', ' ', ' ',  ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', // 7x
+    ' ', ' ',  ' ', ' ', ' ',  ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', // 8x
+    ' ', ' ',  ' ', ' ', ' ',  ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', // 9x
+    ' ', ' ',  ' ', ' ', ' ',  ' ', ' ', ' ', 214, 215, 216, 217, 218, 219, 220, 221, // Ax
+    ' ', ' ',  213, ' ', ' ',  ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', // Bx
+    ' ', ' ',  ' ', ' ', ' ',  ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', // Cx
+    ' ', ' ',  ' ', ' ', ' ',  ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', // Dx
+    'C', 'S',  'A', 'W', ' ',  'S', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', // Ex
+    ' ', ' ',  ' ', ' ', ' ',  ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '       // Fx
+};
+
+void add_keylog(uint16_t keycode);
+
+void add_keylog(uint16_t keycode) {
+    if ((keycode >= QK_MOD_TAP && keycode <= QK_MOD_TAP_MAX) || (keycode >= QK_LAYER_TAP && keycode <= QK_LAYER_TAP_MAX) || (keycode >= QK_MODS && keycode <= QK_MODS_MAX)) {
+        keycode = keycode & 0xFF;
+    } else if (keycode > 0xFF) {
+        keycode = 0;
+    }
+
+    for (uint8_t i = (KEYLOGGER_LENGTH - 1); i > 0; --i) {
+        keylog_str[i] = keylog_str[i - 1];
+    }
+
+    if (keycode < (sizeof(code_to_name) / sizeof(char))) {
+        keylog_str[0] = pgm_read_byte(&code_to_name[keycode]);
+    }
+}
+
+void render_keylogger_status(void) {
     oled_write(keylog_str, false);
+}
+
+char           wpm_str[10];
+uint16_t       wpm_graph_timer = 0;
+static uint8_t zero_bar_count  = 0;
+static uint8_t bar_count       = 0;
+
+static void render_wpm_graph(void) {
+    uint8_t bar_height  = 0;
+    uint8_t bar_segment = 0;
+
+    if (wpm_graph_timer == 0) {
+        oled_render_logo();
+        wpm_graph_timer = timer_read();
+        return;
+    }
+    if (timer_elapsed(wpm_graph_timer) > 500) {
+        wpm_graph_timer = timer_read();
+
+        if (OLED_DISPLAY_HEIGHT == 64) bar_height = get_current_wpm() / 2;
+        if (OLED_DISPLAY_HEIGHT == 32) bar_height = get_current_wpm() / 4;
+        if (bar_height > OLED_DISPLAY_HEIGHT) bar_height = OLED_DISPLAY_HEIGHT;
+
+        if (bar_height == 0) {
+            // keep track of how many zero bars we have drawn.  If
+            // there is a whole screen worth, turn the display off and
+            // wait until there is something to do
+            if (zero_bar_count > OLED_DISPLAY_WIDTH) {
+                oled_off();
+                return;
+            }
+            zero_bar_count++;
+        } else
+            zero_bar_count = 0;
+
+        oled_pan(false);
+        bar_count++;
+        for (uint8_t i = (OLED_DISPLAY_HEIGHT / 8); i > 0; i--) {
+            if (bar_height > 7) {
+                if (i % 2 == 1 && bar_count % 3 == 0)
+                    bar_segment = 254;
+                else
+                    bar_segment = 255;
+                bar_height -= 8;
+            } else {
+                switch (bar_height) {
+                    case 0:
+                        bar_segment = 0;
+                        break;
+
+                    case 1:
+                        bar_segment = 128;
+                        break;
+
+                    case 2:
+                        bar_segment = 192;
+                        break;
+
+                    case 3:
+                        bar_segment = 224;
+                        break;
+
+                    case 4:
+                        bar_segment = 240;
+                        break;
+
+                    case 5:
+                        bar_segment = 248;
+                        break;
+
+                    case 6:
+                        bar_segment = 252;
+                        break;
+
+                    case 7:
+                        bar_segment = 254;
+                        break;
+                }
+                bar_height = 0;
+
+                if (i % 2 == 1 && bar_count % 3 == 0) bar_segment++;
+            }
+            oled_write_raw_byte(bar_segment, (i - 1) * OLED_DISPLAY_WIDTH);
+        }
+    }
+}
+
+bool oled_task_user(void) {
+    if (is_keyboard_master()) {
+        oled_render_layer_state();
+        oled_render_wpm();
+        render_keylogger_status();
+        // oled_render_keylog();
+    } else {
+        render_wpm_graph();
+    }
+    return false;
 }
 
 // // WPM-responsive animation stuff here
@@ -474,15 +597,3 @@ void oled_render_keylog(void) {
 //         }
 //     }
 // }
-
-
-bool oled_task_user(void) {
-    if (is_keyboard_master()) {
-        oled_render_layer_state();
-        oled_render_wpm();
-        // oled_render_keylog();
-    } else {
-        oled_render_logo();
-    }
-    return false;
-}

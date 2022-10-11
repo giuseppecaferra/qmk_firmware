@@ -94,7 +94,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef OLED_ENABLE
 if (record->event.pressed) {
-    set_keylog(keycode, record);
+    oled_timer = timer_read32();
+    add_keylog(keycode);
   }
 #endif
   switch (keycode) {
