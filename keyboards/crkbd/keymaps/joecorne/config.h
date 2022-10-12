@@ -29,7 +29,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MASTER_LEFT
 // #define MASTER_RIGHT
 // #define EE_HANDS
-
+#define OLED_DISPLAY_128X64
+#define OLED_DISPLAY_WIDTH 68 //128
+#define OLED_DISPLAY_HEIGHT 128 //64
 
 #define IGNORE_MOD_TAP_INTERRUPT
 #define TAPPING_TERM 150

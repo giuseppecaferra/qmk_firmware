@@ -36,7 +36,7 @@ void oled_render_layer_state(void) {
     }
 }
 void oled_render_wpm(void) {
-    oled_set_cursor(0, 5);
+    oled_set_cursor(0, 0);
     // This way it's more size efficient than calling sprintf
     oled_write_P(PSTR("WPM: "), false);
     oled_write(get_u8_str(get_current_wpm(), ' '), false);
@@ -50,12 +50,13 @@ void oled_render_logo(void) {
 
 // Keylock State
 void render_keylock_status(uint8_t led_usb_state) {
+      oled_set_cursor(0, 3);
     oled_write_P(PSTR(" "), false);
-    oled_write_P(led_usb_state & (1 << USB_LED_NUM_LOCK) ? PSTR("-NUML") : PSTR("-----"), false);
+    oled_write_P(led_usb_state & (1 << USB_LED_NUM_LOCK) ? PSTR("NUML") : PSTR("    "), false);
     oled_write_P(PSTR(" "), false);
-    oled_write_P(led_usb_state & (1 << USB_LED_CAPS_LOCK) ? PSTR("-CAPS") : PSTR("-----"), false);
+    oled_write_P(led_usb_state & (1 << USB_LED_CAPS_LOCK) ? PSTR("CAPS") : PSTR("     "), false);
     oled_write_P(PSTR(" "), false);
-    oled_write_P(led_usb_state & (1 << USB_LED_SCROLL_LOCK) ? PSTR("-SCRL") : PSTR("-----"), false);
+    oled_write_P(led_usb_state & (1 << USB_LED_SCROLL_LOCK) ? PSTR("SCRL") : PSTR("     "), false);
     oled_write_P(PSTR(" "), false);
 }
 
@@ -103,6 +104,7 @@ void add_keylog(uint16_t keycode) {
 }
 
 void render_keylogger_status(void) {
+    oled_set_cursor(0,2);
     oled_write(keylog_str, false);
 }
 
@@ -186,7 +188,7 @@ static void render_wpm_graph(void) {
 
                 if (i % 2 == 1 && bar_count % 3 == 0) bar_segment++;
             }
-            oled_write_raw_byte(bar_segment, (i - 1) * OLED_DISPLAY_WIDTH);
+            oled_write_raw_byte(bar_segment, (i - 1) * OLED_DISPLAY_HEIGHT);
         }
     }
 }
