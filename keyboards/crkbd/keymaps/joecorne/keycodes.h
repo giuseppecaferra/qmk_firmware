@@ -9,7 +9,7 @@
 #define _MOVES 5
 
 enum custom_keycodes {
-  QWERTY = SAFE_RANGE,
+  QWERTY = SAFE_RANGE, // 100
   LOWER,
   RAISE,
   ADJUST,

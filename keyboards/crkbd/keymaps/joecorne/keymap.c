@@ -96,6 +96,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 if (record->event.pressed) {
     oled_timer = timer_read32();
     add_keylog(keycode);
+    update_wpm(keycode);
   }
 #endif
   switch (keycode) {
@@ -149,3 +150,6 @@ if (record->event.pressed) {
 }
 
 
+void matrix_scan_user(void) {
+    decay_wpm();
+}
