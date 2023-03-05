@@ -27,3 +27,4 @@ enum custom_keycodes {
 #define ALT_L ALT_T(KC_L)
 
 #define ALT_INS RALT(KC_INS)
+#define KC_AMP LSFT(KC_7)
