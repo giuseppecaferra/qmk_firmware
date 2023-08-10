@@ -1,6 +1,5 @@
 #pragma once
 
-
 #define _QWERTY 0
 #define _LOWER 1
 #define _RAISE 2
@@ -9,7 +8,7 @@
 #define _MOVES 5
 
 enum custom_keycodes {
-  QWERTY = SAFE_RANGE, // 100
+  QWERTY = QK_USER, // 100
   LOWER,
   RAISE,
   ADJUST,
