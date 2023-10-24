@@ -2,7 +2,7 @@ MOUSEKEY_ENABLE = no
 RGBLIGHT_ENABLE    = no
 RGB_MATRIX_ENABLE  = yes
 OLED_ENABLE = yes
-OLED_DRIVER = SSD1306
+OLED_DRIVER = ssd1306
 NKRO_ENABLE        = no
 WPM_ENABLE = yes
 MIDI_ENABLE = no            # MIDI controls
@@ -16,6 +16,10 @@ AUTO_SHIFT_ENABLE = no
 BLUETOOTH_ENABLE = no
 KEY_LOCK_ENABLE = no
 SWAP_HANDS_ENABLE = no
+SPACE_CADET_ENABLE = no
+GRAVE_ESC_ENABLE = no
+MAGIC_ENABLE = no
+
 
 # Do not enable SLEEP_LED_ENABLE. it uses the same timer as BACKLIGHT_ENABLE
 SLEEP_LED_ENABLE = no    # Breathing sleep LED during USB suspend

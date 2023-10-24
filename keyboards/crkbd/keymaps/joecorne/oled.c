@@ -51,12 +51,13 @@ void oled_render_logo(void) {
 // Keylock State
 void render_keylock_status(uint8_t led_usb_state) {
       oled_set_cursor(0, 3);
+      led_t led_state = host_keyboard_led_state();
     oled_write_P(PSTR(" "), false);
-    oled_write_P(led_usb_state & (1 << USB_LED_NUM_LOCK) ? PSTR("NUML") : PSTR("    "), false);
+    oled_write_P(led_usb_state & (1 << led_state.num_lock) ? PSTR("NUML") : PSTR("    "), false);
     oled_write_P(PSTR(" "), false);
-    oled_write_P(led_usb_state & (1 << USB_LED_CAPS_LOCK) ? PSTR("CAPS") : PSTR("     "), false);
+    oled_write_P(led_usb_state & (1 << led_state.caps_lock) ? PSTR("CAPS") : PSTR("     "), false);
     oled_write_P(PSTR(" "), false);
-    oled_write_P(led_usb_state & (1 << USB_LED_SCROLL_LOCK) ? PSTR("SCRL") : PSTR("     "), false);
+    oled_write_P(led_usb_state & (1 << led_state.scroll_lock) ? PSTR("SCRL") : PSTR("     "), false);
     oled_write_P(PSTR(" "), false);
 }
 
